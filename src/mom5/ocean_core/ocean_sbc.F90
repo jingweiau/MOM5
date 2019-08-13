@@ -1319,7 +1319,7 @@ subroutine ocean_sbc_init(Grid, Domain, Time, T_prog, T_diag, &
 #endif
 
         ! get file indices for restoring fields on temp and salinity  
-        name = 'INPUT/'//trim(T_prog(n)%name)//'_sfc_restore.nc'
+        name = 'INPUT/'//trim(T_prog(n)%name)//'_sfc_restore_model.nc'
         if (file_exist(trim(name))) then
             id_restore(n) = init_external_field(name, T_prog(n)%name, domain=Dom%domain2d)
             write(stdoutunit,*) &
@@ -4763,7 +4763,6 @@ subroutine flux_adjust(Time, T_diag, Dens, Ext_mode, T_prog, Velocity, river, me
             do i=isc,iec
                flx_restore(i,j) = temp_damp_factor*restore_mask(i,j) &
                                   *(data(i,j)-T_diag(index_diag_temp)%field(i,j,1))
-               T_prog(index_temp)%stf(i,j) = T_prog(index_temp)%stf(i,j) + flx_restore(i,j)
             enddo
          enddo
      else 
@@ -4771,10 +4770,23 @@ subroutine flux_adjust(Time, T_diag, Dens, Ext_mode, T_prog, Velocity, river, me
             do i=isc,iec
                flx_restore(i,j) = temp_damp_factor*restore_mask(i,j) &
                                   *(data(i,j)-T_prog(index_temp)%field(i,j,1,taum1))
-               T_prog(index_temp)%stf(i,j) = T_prog(index_temp)%stf(i,j) + flx_restore(i,j)
             enddo
          enddo
      endif
+     
+     ! produce a zero area average so there is no net input
+     ! of heat to the ocean associated with the restoring
+     flx_restore_total =  &
+         mpp_global_sum(Dom%domain2d,flx_restore(:,:)*Grd%dat(:,:)*Grd%tmask(:,:,1), global_sum_flag)/Grd%tcellsurf
+     ! truncate out the lower order bits if using non_bitwise_reproducible sums
+     if (global_sum_flag .eq. NON_BITWISE_EXACT_SUM) flx_restore_total = real(flx_restore_total, kind=FLOAT_KIND)
+     flx_restore(isc:iec,jsc:jec) = flx_restore(isc:iec,jsc:jec) - flx_restore_total*Grd%tmask(isc:iec,jsc:jec,1)
+     
+     do j=jsc,jec
+        do i=isc,iec
+     T_prog(index_temp)%stf(i,j) = T_prog(index_temp)%stf(i,j) + flx_restore(i,j)
+        enddo
+     enddo
 
   endif ! (id_restore(index_temp) > 0 .and. temp_damp_factor > 0.0)
 
