@@ -546,6 +546,11 @@ real, allocatable, dimension(:,:) :: wind_mask
 integer, allocatable, dimension(:) :: id_restore
 integer :: id_eta_restore=-1 
 
+! for tpme input field
+integer :: id_tpme_clim =-1
+! for trunoff input field
+integer :: id_trunoff_clim =-1
+
 ! for flux corrections input fields  
 integer :: id_tau_x_correction =-1
 integer :: id_tau_y_correction =-1
@@ -902,6 +907,8 @@ logical :: read_stokes_drift              =.false.
 logical :: do_langmuir                    =.false.
 logical :: do_ustar_correction            =.true.  ! In FAFMIP stress make this falsel
 logical :: do_frazil_redist               =.true.  ! In FAFMIP heat make this false to recover old (not recommended) behaviour.
+logical :: use_clim_tpme                  =.false.
+logical :: use_clim_trunoff               =.false.
 
 real    :: constant_sss_for_restore       = 35.0
 real    :: constant_sst_for_restore       = 12.0
@@ -938,7 +945,7 @@ logical :: restore_mask_ofam = .false.
 logical :: river_temp_ofam = .false.
 
 namelist /ocean_sbc_nml/ temp_restore_tscale, salt_restore_tscale, salt_restore_under_ice, salt_restore_as_salt_flux,        &
-         eta_restore_tscale, zero_net_pme_eta_restore,                                                                       & 
+         eta_restore_tscale, zero_net_pme_eta_restore,use_clim_tpme, use_clim_trunoff,                                                                       & 
          rotate_winds, taux_sinx, tauy_siny, use_waterflux, waterflux_tavg, max_ice_thickness, runoffspread, calvingspread,  &
          use_waterflux_override_calving, use_waterflux_override_evap, use_waterflux_override_fprec,                          &
          salinity_ref, zero_net_salt_restore, zero_net_water_restore, zero_net_water_coupler, zero_net_water_couple_restore, &
@@ -1269,7 +1276,28 @@ subroutine ocean_sbc_init(Grid, Domain, Time, T_prog, T_diag, &
   if(T_prog(index_salt)%longname=='Preformed Salinity')       prog_salt_variable = PREFORMED_SALT
   if(T_prog(index_salt)%longname=='Practical Salinity')       prog_salt_variable = PRACTICAL_SALT
 
-
+  ! get file indices for tpme
+  name = 'INPUT/tpme.nc'
+  if (file_exist(trim(name)) .and. use_clim_tpme) then
+      id_tpme_clim = init_external_field(name, "tpme", domain=Dom%domain2d)
+      write(stdoutunit,*) &
+      '==>Note from ocean_sbc_mod: using repeating one-year daily SST as tpme'
+      if (id_tpme_clim == -1) then 
+         call mpp_error(FATAL,'==>Error in ocean_sbc_mod: failed to find tpme field in INPUT/tpme.nc') 
+      endif 
+  endif
+  
+  ! get file indices for trunoff
+  name = 'INPUT/trunoff.nc'
+  if (file_exist(trim(name)) .and. use_clim_trunoff) then
+      id_trunoff_clim = init_external_field(name, "temp_runoff", domain=Dom%domain2d)
+      write(stdoutunit,*) &
+      '==>Note from ocean_sbc_mod: using repeating one-year daily temp_runoff as trunoff'
+      if (id_trunoff_clim == -1) then 
+         call mpp_error(FATAL,'==>Error in ocean_sbc_mod: failed to find temp_runoff field in INPUT/trunoff.nc') 
+      endif 
+  endif
+  
   ! get file indices for wind stress flux corrections (N/m2).
   ! assume corrections are on B-grid velocity point.
   ! if using C-grid, then corrections will be averaged from B to C grid. 
@@ -3477,6 +3505,32 @@ subroutine get_ocean_sbc(Time, Ice_ocean_boundary, Thickness, Dens, Ext_mode, T_
   ! Set temperature for water in evaporation and precipitation equal to the 
   ! ocean surface value. Default for other tracers is to have zero concentration 
   ! in evaporation and precipitation.
+  ! or read tpme from external file
+  if (id_tpme_clim > 0 ) then
+     call time_interp_external(id_tpme_clim, Time%model_time, data)
+  
+  do j=jsc,jec
+     do i=isc,iec
+       T_prog(index_temp)%tpme(i,j) = Grd%tmask(i,j,1)*data(i,j)
+     enddo
+  enddo
+  if(index_redist_heat > 0) then
+    do j=jsc,jec
+       do i=isc,iec
+         T_prog(index_redist_heat)%tpme(i,j) = Grd%tmask(i,j,1)*data(i,j)
+       enddo
+    enddo
+  endif
+  if(index_added_heat > 0) then
+    do j=jsc,jec
+       do i=isc,iec
+         T_prog(index_added_heat)%tpme(i,j) = Grd%tmask(i,j,1)*data(i,j)
+       enddo
+    enddo
+  endif
+  
+  else ! use model sst
+  
   do j=jsc,jec
      do i=isc,iec
        T_prog(index_temp)%tpme(i,j) = T_prog(index_temp)%field(i,j,1,tau)
@@ -3495,6 +3549,8 @@ subroutine get_ocean_sbc(Time, Ice_ocean_boundary, Thickness, Dens, Ext_mode, T_
          T_prog(index_added_heat)%tpme(i,j) = T_prog(index_added_heat)%field(i,j,1,tau)
        enddo
     enddo
+  endif
+  
   endif
 
   ! set velocity of pme and river water to that of upper ocean cell.   
@@ -3723,6 +3779,55 @@ subroutine get_ocean_sbc(Time, Ice_ocean_boundary, Thickness, Dens, Ext_mode, T_
           ! less than runoff_temp_min. For other tracers, by default keep them   
           ! set to their initial concentration.
           ! For calving temperature, set this equal to the SST.  
+                    
+          ! or read trunoff from external file
+          if (id_trunoff_clim > 0 ) then
+                call time_interp_external(id_trunoff_clim, Time%model_time, data)
+
+          do j=jsc,jec
+             do i=isc,iec
+                T_prog(index_temp)%trunoff(i,j)  = Grd%tmask(i,j,1)*data(i,j)
+                T_prog(index_temp)%tcalving(i,j) = &
+                   T_prog(index_temp)%field(i,j,1,tau)
+                T_prog(index_temp)%runoff_tracer_flux(i,j) = &
+                   Grd%tmask(i,j,1)*T_prog(index_temp)%trunoff(i,j)*runoff(i,j)
+                T_prog(index_temp)%calving_tracer_flux(i,j)= &
+                   Grd%tmask(i,j,1)*T_prog(index_temp)%tcalving(i,j)*calving(i,j)
+             enddo
+          enddo
+
+          ! for FAFMIP redistributed heat tracer 
+          if(index_redist_heat > 0) then
+            do j=jsc,jec
+               do i=isc,iec
+                 T_prog(index_redist_heat)%trunoff(i,j)  = Grd%tmask(i,j,1)*data(i,j)
+                 T_prog(index_redist_heat)%tcalving(i,j) = &
+                   T_prog(index_redist_heat)%field(i,j,1,tau)
+                 T_prog(index_redist_heat)%runoff_tracer_flux(i,j) = &
+                   Grd%tmask(i,j,1)*T_prog(index_redist_heat)%trunoff(i,j)*runoff(i,j)
+                 T_prog(index_redist_heat)%calving_tracer_flux(i,j)= &
+                   Grd%tmask(i,j,1)*T_prog(index_redist_heat)%tcalving(i,j)*calving(i,j)
+               enddo
+            enddo
+          endif           
+
+          ! for FAFMIP added heat tracer 
+          if(index_added_heat > 0) then
+            do j=jsc,jec
+               do i=isc,iec
+                 T_prog(index_added_heat)%trunoff(i,j)  = Grd%tmask(i,j,1)*data(i,j)
+                 T_prog(index_added_heat)%tcalving(i,j) = &
+                   T_prog(index_added_heat)%field(i,j,1,tau)
+                 T_prog(index_added_heat)%runoff_tracer_flux(i,j) = &
+                   Grd%tmask(i,j,1)*T_prog(index_added_heat)%trunoff(i,j)*runoff(i,j)
+                 T_prog(index_added_heat)%calving_tracer_flux(i,j)= &
+                   Grd%tmask(i,j,1)*T_prog(index_added_heat)%tcalving(i,j)*calving(i,j)
+               enddo
+            enddo
+          endif           
+
+          else ! model calculate trunoff itself
+          
           do j=jsc,jec
              do i=isc,iec
                 T_prog(index_temp)%trunoff(i,j)  = &
@@ -3767,6 +3872,8 @@ subroutine get_ocean_sbc(Time, Ice_ocean_boundary, Thickness, Dens, Ext_mode, T_
                enddo
             enddo
           endif           
+          
+          endif     ! id_trunoff_clim
 
       endif     ! land_model_heat_fluxes
 
