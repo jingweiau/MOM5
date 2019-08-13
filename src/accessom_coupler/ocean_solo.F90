@@ -585,6 +585,8 @@ subroutine ice_ocn_bnd_from_data(x)
       call data_override('OCN', 'p',               x%p              , Time_next)
       call data_override('OCN', 'aice',            x%aice           , Time_next)
       call data_override('OCN', 'mh_flux',         x%mh_flux        , Time_next)
+      call data_override('OCN', 'wfimelt',         x%wfimelt        , Time_next)
+      call data_override('OCN', 'wfiform',         x%wfiform        , Time_next)
     call mpp_sync()
             
 end subroutine ice_ocn_bnd_from_data
