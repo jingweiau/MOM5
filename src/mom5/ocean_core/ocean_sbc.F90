@@ -1347,7 +1347,7 @@ subroutine ocean_sbc_init(Grid, Domain, Time, T_prog, T_diag, &
 #endif
 
         ! get file indices for restoring fields on temp and salinity  
-        name = 'INPUT/'//trim(T_prog(n)%name)//'_sfc_restore.nc'
+        name = 'INPUT/'//trim(T_prog(n)%name)//'_sfc_restore_flux.nc'
         if (file_exist(trim(name))) then
             id_restore(n) = init_external_field(name, T_prog(n)%name, domain=Dom%domain2d)
             write(stdoutunit,*) &
@@ -4603,8 +4603,7 @@ subroutine flux_adjust(Time, T_diag, Dens, Ext_mode, T_prog, Velocity, river, me
           if(max_delta_salinity_restore < 0.0) then 
               do j=jsc,jec
                  do i=isc,iec
-                    flx_restore(i,j) = salt_damp_factor*open_ocean_mask(i,j)*restore_mask(i,j) &
-                                       *(data(i,j) - T_prog(index_salt)%field(i,j,1,taum1))
+                    flx_restore(i,j) = open_ocean_mask(i,j)*restore_mask(i,j)*data(i,j)/T_prog(index_salt)%conversion
                  enddo
               enddo
           else 
@@ -4617,8 +4616,7 @@ subroutine flux_adjust(Time, T_diag, Dens, Ext_mode, T_prog, Velocity, river, me
                        tmp_delta_salinity = sign(1.0,tmp_delta_salinity) &
                             *min(abs(tmp_delta_salinity),max_delta_salinity_restore)
                     end if
-                    flx_restore(i,j) = salt_damp_factor*open_ocean_mask(i,j)*restore_mask(i,j) &
-                                       *tmp_delta_salinity
+                    flx_restore(i,j) = open_ocean_mask(i,j)*restore_mask(i,j)*data(i,j)/T_prog(index_salt)%conversion
                  enddo
               enddo
           endif
@@ -4868,16 +4866,14 @@ subroutine flux_adjust(Time, T_diag, Dens, Ext_mode, T_prog, Velocity, river, me
      if(prog_temp_variable==CONSERVATIVE_TEMP) then 
          do j=jsc,jec
             do i=isc,iec
-               flx_restore(i,j) = temp_damp_factor*restore_mask(i,j) &
-                                  *(data(i,j)-T_diag(index_diag_temp)%field(i,j,1))
+               flx_restore(i,j) = restore_mask(i,j)*data(i,j)/T_prog(index_temp)%conversion
                T_prog(index_temp)%stf(i,j) = T_prog(index_temp)%stf(i,j) + flx_restore(i,j)
             enddo
          enddo
      else 
          do j=jsc,jec
             do i=isc,iec
-               flx_restore(i,j) = temp_damp_factor*restore_mask(i,j) &
-                                  *(data(i,j)-T_prog(index_temp)%field(i,j,1,taum1))
+               flx_restore(i,j) = restore_mask(i,j)*data(i,j)/T_prog(index_temp)%conversion
                T_prog(index_temp)%stf(i,j) = T_prog(index_temp)%stf(i,j) + flx_restore(i,j)
             enddo
          enddo
