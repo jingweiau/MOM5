@@ -4438,7 +4438,7 @@ end subroutine get_ocean_sbc
 ! </DESCRIPTION>
 !
 
-subroutine flux_adjust(Time, T_diag, Dens, Ext_mode, T_prog, Velocity, river, melt, pme)
+subroutine flux_adjust(Time, T_diag, Dens, Ext_mode, T_prog, Velocity, river, melt, pme, pme_correct)
 #if defined(ACCESS_CM) || defined(ACCESS_OM)
 
   use auscom_ice_parameters_mod, only : use_ioaice, aice_cutoff
@@ -4457,7 +4457,7 @@ subroutine flux_adjust(Time, T_diag, Dens, Ext_mode, T_prog, Velocity, river, me
 
   real, dimension(isd:ied,jsd:jed) :: open_ocean_mask
   real, dimension(isd:ied,jsd:jed) :: pme_restore, flx_restore
-  real, dimension(isd:ied,jsd:jed) :: pme_correct
+  real, dimension(isd:ied,jsd:jed), intent(out) :: pme_correct
   real, dimension(isd:ied,jsd:jed) :: flx_correct
   real, dimension(isd:ied,jsd:jed) :: flx_added_heat
   real, dimension(isd:ied,jsd:jed) :: tau_x_correction 
