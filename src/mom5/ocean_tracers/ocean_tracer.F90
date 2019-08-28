@@ -2278,7 +2278,7 @@ subroutine update_ocean_tracer (Time, Dens, Adv_vel, Thickness, pme, diff_cbt, &
         do j=jsc,jec
            do i=isc,iec
               T_prog(n)%th_tendency(i,j,1) = T_prog(n)%th_tendency(i,j,1) + &
-               Grd%tmask(i,j,1)*(pme(i,j)*T_prog(n)%tpme(i,j) + T_prog(n)%eta_smooth(i,j) ) 
+               Grd%tmask(i,j,1)*((pme(i,j)-pme_correct(i,j))*T_prog(n)%tpme(i,j) + T_prog(n)%eta_smooth(i,j) ) 
            enddo
         enddo
 
