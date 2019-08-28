@@ -2196,7 +2196,7 @@ end function ocean_diag_tracer_init  !}
 ! divided. 
 ! </DESCRIPTION>
 !
-subroutine update_ocean_tracer (Time, Dens, Adv_vel, Thickness, pme, diff_cbt, &
+subroutine update_ocean_tracer (Time, Dens, Adv_vel, Thickness, pme, pme_correct, diff_cbt, &
                                 T_prog, T_diag, L_system,   &
                                 Velocity, Ext_mode, EL_diag, use_blobs)
 
@@ -2205,6 +2205,7 @@ subroutine update_ocean_tracer (Time, Dens, Adv_vel, Thickness, pme, diff_cbt, &
   type(ocean_adv_vel_type),       intent(in)    :: Adv_vel
   type(ocean_thickness_type),     intent(inout) :: Thickness
   real, dimension(isd:,jsd:),     intent(in)    :: pme
+  real, dimension(isd:,jsd:),     intent(in)    :: pme_correct
   real, dimension(isd:,jsd:,:,:), intent(in)    :: diff_cbt
 
   type(ocean_prog_tracer_type),   intent(inout) :: T_prog(:)
