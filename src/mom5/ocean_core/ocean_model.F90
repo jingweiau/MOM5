@@ -367,6 +367,7 @@ private
   real, dimension(isd:ied,jsd:jed,nk,2) :: visc_cbu_form_drag ! viscosity (m^2/sec) from Greatbatch form drag
 
   real, dimension(isd:ied,jsd:jed)      :: pme           ! mass flux per horz area of precip-evap (kg/(s*m^2))
+  real, dimension(isd:ied,jsd:jed)      :: pme_correct   ! mass flux per horz area of precip-evap (kg/(s*m^2))
   real, dimension(isd:ied,jsd:jed)      :: melt          ! mass flux per horz area of ice melt water (kg/(s*m^2))
   real, dimension(isd:ied,jsd:jed,2)    :: upme          ! horizontal velocity of precip minus evap (m/s)
   real, dimension(isd:ied,jsd:jed)      :: river         ! mass flux of river (runoff+calving) per horz area (kg/(s*m^2))
@@ -393,6 +394,7 @@ private
   real, pointer, dimension(:,:,:,:) :: visc_cbu_form_drag  =>NULL() ! viscosity (m^2/sec) from Greatbatch form drag
 
   real, pointer, dimension(:,:)     :: pme                 =>NULL() ! mass flux per horz area from precip-evap (kg/(s*m^2))
+  real, pointer, dimension(:,:)     :: pme_correct         =>NULL() ! mass flux per horz area from precip-evap (kg/(s*m^2))
   real, pointer, dimension(:,:)     :: melt                =>NULL() ! mass flux per horz area of ice melt water (kg/(s*m^2))
   real, pointer, dimension(:,:,:)   :: upme                =>NULL() ! horizontal velocity of precip minus evap (m/s)
   real, pointer, dimension(:,:)     :: river               =>NULL() ! mass flux of river (runoff+calving) per horz area (kg/(s*m^2)) 
@@ -1189,6 +1191,7 @@ subroutine ocean_model_init(Ocean, Ocean_state, Time_init, Time_in, &
     allocate(gm_diffusivity(isd:ied,jsd:jed,nk))
     allocate(visc_cbu_form_drag(isd:ied,jsd:jed,nk,2))
     allocate(pme(isd:ied,jsd:jed))
+    allocate(pme_correct(isd:ied,jsd:jed))
     allocate(melt(isd:ied,jsd:jed))
     allocate(upme(isd:ied,jsd:jed,2))
     allocate(river(isd:ied,jsd:jed))
@@ -1228,6 +1231,7 @@ subroutine ocean_model_init(Ocean, Ocean_state, Time_init, Time_in, &
     gm_diffusivity              = 0.0
     visc_cbu_form_drag          = 0.0
     pme                         = 0.0
+    pme_correct                 = 0.0
     melt                        = 0.0
     upme                        = 0.0
     river                       = 0.0
