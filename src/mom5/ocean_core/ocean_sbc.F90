@@ -3524,7 +3524,7 @@ subroutine get_ocean_sbc(Time, Ice_ocean_boundary, Thickness, Dens, Ext_mode, T_
   if(index_added_heat > 0) then
     do j=jsc,jec
        do i=isc,iec
-         T_prog(index_added_heat)%tpme(i,j) = Grd%tmask(i,j,1)*data(i,j)
+         T_prog(index_added_heat)%tpme(i,j) = 0
        enddo
     enddo
   endif
@@ -3815,7 +3815,7 @@ subroutine get_ocean_sbc(Time, Ice_ocean_boundary, Thickness, Dens, Ext_mode, T_
           if(index_added_heat > 0) then
             do j=jsc,jec
                do i=isc,iec
-                 T_prog(index_added_heat)%trunoff(i,j)  = Grd%tmask(i,j,1)*data(i,j)
+                 T_prog(index_added_heat)%trunoff(i,j)  = 0
                  T_prog(index_added_heat)%tcalving(i,j) = &
                    T_prog(index_added_heat)%field(i,j,1,tau)
                  T_prog(index_added_heat)%runoff_tracer_flux(i,j) = &
