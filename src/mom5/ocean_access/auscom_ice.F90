@@ -498,7 +498,7 @@ if ( ATIME_redist > 0 ) then
    do j = jjsc, jjec
       do i = iisc, iiec
 
-        Ocean_sfc%frazil(i,j) = QICE_redist(i,j) * frazil_factor * rho_cp / float(ATIME_redist)
+        Ocean_sfc%frazil(i,j) = 0 !QICE_redist(i,j) * frazil_factor * rho_cp / float(ATIME_redist)
   ! here ATIME_redist can be accumulated time (seconds) in a coupling interval 
   ! or just the ocean time step, depending how often the ice_formation_new
   ! is called  (21/07/2008, E. Hunke suggested POP calls ice_foramtion
@@ -512,7 +512,7 @@ else
    do j = jjsc, jjec
       do i = iisc, iiec
 
-           Ocean_sfc%frazil(i,j) = QICE(i,j) * frazil_factor * rho_cp / float(ATIME)
+           Ocean_sfc%frazil(i,j) = 0 !QICE(i,j) * frazil_factor * rho_cp / float(ATIME)
   ! here ATIME can be accumulated time (seconds) in a coupling interval 
   ! or just the ocean time step, depending how often the ice_formation_new
   ! is called  (21/07/2008, E. Hunke suggested POP calls ice_foramtion
