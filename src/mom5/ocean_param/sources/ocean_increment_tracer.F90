@@ -294,8 +294,7 @@ subroutine ocean_increment_tracer_source(Time, Thickness, T_prog)
          do k=1,nk
             do j=jsd,jed
                do i=isd,ied 
-                  wrk2(i,j,k) = Thickness%rho_dzt(i,j,k,tau)*Increment(n)%damp_coeff(i,j,k) &
-                 *wrk1(i,j,k)
+                  wrk2(i,j,k) = wrk1(i,j,k)/T_prog(n)%conversion
                   T_prog(n)%th_tendency(i,j,k) = T_prog(n)%th_tendency(i,j,k) + wrk2(i,j,k)
                enddo
             enddo
