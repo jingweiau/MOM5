@@ -2330,7 +2330,7 @@ end subroutine update_ocean_density
           do j=jsd,jed
              do i=isd,ied
 
-                t1  = theta(i,j,k)
+                t1  = max(theta(i,j,k),-1.8)
                 t2  = t1*t1
 
                 s1  = salinity(i,j,k)
@@ -2448,7 +2448,7 @@ end subroutine update_ocean_density
        do j=jsd,jed
           do i=isd,ied
 
-             t1  = theta(i,j)
+             t1  = max(theta(i,j),-1.8)
              t2  = t1*t1
 
              s1  = salinity(i,j)
@@ -2558,7 +2558,7 @@ end subroutine update_ocean_density
 
         do i=isd,ied
 
-           t1  = theta(i)
+           t1  = max(theta(i),-1.8)
            t2  = t1*t1
 
            s1  = salinity(i)
@@ -2712,7 +2712,7 @@ end subroutine update_ocean_density
 
     else
 
-        t1  = theta
+        t1  = max(theta,-1.8)
         t2  = t1*t1
 
         s1  = salinity
@@ -2790,7 +2790,7 @@ end subroutine update_ocean_density
             do k=1,nk
                do j=jsd,jed
                   do i=isd,ied
-                     t1  = theta(i,j,k)
+                     t1  = max(theta(i,j,k),-1.8)
                      t2  = t1*t1
 
                      s1  = salinity(i,j,k)
@@ -2816,7 +2816,7 @@ end subroutine update_ocean_density
             do k=1,nk
                do j=jsd,jed
                   do i=isd,ied
-                     t1  = theta(i,j,k)
+                     t1  = max(theta(i,j,k),-1.8)
                      t2  = t1*t1
 
                      s1  = salinity(i,j,k)
@@ -3413,7 +3413,7 @@ end subroutine compute_density_diagnostics
           do j=jsd,jed
              do i=isd,ied
 
-                t1  = theta(i,j,1)
+                t1  = max(theta(i,j,1),-1.8)
                 t2  = t1*t1
 
                 s1  = salinity(i,j,1)
@@ -3488,13 +3488,13 @@ end subroutine compute_density_diagnostics
 !
 ! </DESCRIPTION>
 !
-  function density_point (s1, t1, p1_dbars)
+  function density_point (s1, t11, p1_dbars)
 
     real, intent(in) :: s1
-    real, intent(in) :: t1
+    real, intent(in) :: t11
     real, intent(in) :: p1_dbars
 
-    real :: t2, sp5, p1, p1t1
+    real :: t1, t2, sp5, p1, p1t1
     real :: num, den
     real :: density_point
     real :: pressure 
@@ -3510,6 +3510,7 @@ end subroutine compute_density_diagnostics
        pressure = p1_dbars 
     endif 
 
+    t1=max(t11,-1.8)
 
     if(eos_linear) then
 
