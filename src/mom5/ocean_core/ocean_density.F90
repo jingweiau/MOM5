@@ -2313,6 +2313,15 @@ end subroutine update_ocean_density
        pressure(:,:,:) = press(:,:,:)
     endif 
 
+       do k=1,nk
+           do j=jsd,jed
+              do i=isd,ied
+                if (theta(i,j,k) < -1.8) then
+                 theta(i,j,k) = -1.8
+                endif
+              enddo
+           enddo
+       enddo
 
     if(eos_linear) then
 
@@ -2434,6 +2443,13 @@ end subroutine update_ocean_density
        pressure(:,:) = press(:,:)
     endif 
 
+    do j=jsd,jed
+       do i=isd,ied
+         if (theta(i,j) < -1.8) then
+          theta(i,j) = -1.8
+         endif
+       enddo
+    enddo
 
     if(eos_linear) then
 
@@ -2547,6 +2563,11 @@ end subroutine update_ocean_density
        pressure(:) = press(:)
     endif 
 
+    do i=isd,ied
+      if (theta(i) < -1.8) then
+       theta(i) = -1.8
+      endif
+    enddo
 
     if(eos_linear) then
 
@@ -2652,6 +2673,16 @@ end subroutine update_ocean_density
       '==>Error in ocean_density_mod (neutral_density_field): module must be initialized')
     endif 
 
+    do k=1,nk
+        do j=jsd,jed
+           do i=isd,ied
+             if (theta(i,j,k) < -1.8) then
+              theta(i,j,k) = -1.8
+             endif
+           enddo
+        enddo
+    enddo
+
     if(neutral_density_theta) then
         do k=1,nk
            do j=jsd,jed
@@ -2701,6 +2732,10 @@ end subroutine update_ocean_density
       call mpp_error(FATAL, &
       '==>Error in ocean_density_mod (neutral_density_point): module must be initialized')
     endif 
+
+    if (theta < -1.8) then
+        theta = -1.8
+    endif
 
     if(neutral_density_theta) then
 
@@ -2771,6 +2806,15 @@ end subroutine update_ocean_density
        '==>Error in ocean_density_mod: potential density at pressure < 0 is not defined')
     endif 
 
+       do k=1,nk
+           do j=jsd,jed
+              do i=isd,ied
+                if (theta(i,j,k) < -1.8) then
+                 theta(i,j,k) = -1.8
+                endif
+              enddo
+           enddo
+        enddo
 
     if(eos_linear) then
 
@@ -3396,6 +3440,15 @@ end subroutine compute_density_diagnostics
        pressure(:,:,:) = press(:,:,:)
     endif 
 
+   do k=1,nk
+       do j=jsd,jed
+          do i=isd,ied
+            if (theta(i,j,k) < -1.8) then
+             theta(i,j,k) = -1.8
+            endif
+          enddo
+       enddo
+    enddo
 
     if(eos_linear) then
 
@@ -3510,6 +3563,9 @@ end subroutine compute_density_diagnostics
        pressure = p1_dbars 
     endif 
 
+    if (t1 < -1.8) then
+       t1 = -1.8
+    endif
 
     if(eos_linear) then
 
