@@ -2292,7 +2292,7 @@ end subroutine update_ocean_density
   function density_field (salinity, theta, press)
 
     real, dimension(isd:,jsd:,:), intent(in) :: salinity
-    real, dimension(isd:,jsd:,:), intent(inout) :: theta
+    real, dimension(isd:,jsd:,:), intent(in) :: theta
     real, dimension(isd:,jsd:,:), intent(in) :: press
 
     real, dimension(isd:ied,jsd:jed,nk) :: density_field
@@ -2422,7 +2422,7 @@ end subroutine update_ocean_density
   function density_level(salinity, theta, press)
 
     real, dimension(isd:,jsd:), intent(in) :: salinity
-    real, dimension(isd:,jsd:), intent(inout) :: theta
+    real, dimension(isd:,jsd:), intent(in) :: theta
     real, dimension(isd:,jsd:), intent(in) :: press
 
     real, dimension(isd:ied,jsd:jed) :: density_level 
@@ -2542,7 +2542,7 @@ end subroutine update_ocean_density
   function density_line(salinity, theta, press)
 
     real, dimension(isd:), intent(in) :: salinity
-    real, dimension(isd:), intent(inout) :: theta
+    real, dimension(isd:), intent(in) :: theta
     real, dimension(isd:), intent(in) :: press
 
     real, dimension(isd:ied) :: density_line 
@@ -2662,7 +2662,7 @@ end subroutine update_ocean_density
   function neutral_density_field (salinity, theta)
 
     real, dimension(isd:,jsd:,:), intent(in) :: salinity
-    real, dimension(isd:,jsd:,:), intent(inout) :: theta
+    real, dimension(isd:,jsd:,:), intent(in) :: theta
 
     real, dimension(isd:ied,jsd:jed,nk) :: neutral_density_field
 
@@ -2722,7 +2722,7 @@ end subroutine update_ocean_density
   function neutral_density_point (salinity, theta)
 
     real, intent(in) :: salinity
-    real, intent(inout) :: theta
+    real, intent(in) :: theta
 
     real :: neutral_density_point
     real :: t1, t2, s1, sp5
@@ -2787,7 +2787,7 @@ end subroutine update_ocean_density
   function potential_density (salinity, theta, pressure)
 
     real, dimension(isd:,jsd:,:), intent(in) :: salinity
-    real, dimension(isd:,jsd:,:), intent(inout) :: theta
+    real, dimension(isd:,jsd:,:), intent(in) :: theta
     real,                         intent(in) :: pressure
 
     real, dimension(isd:ied,jsd:jed,nk) :: potential_density
@@ -3419,7 +3419,7 @@ end subroutine compute_density_diagnostics
   function density_sfc (salinity, theta, press)
 
     real, intent(in), dimension(isd:,jsd:,:) :: salinity
-    real, intent(inout), dimension(isd:,jsd:,:) :: theta
+    real, intent(in), dimension(isd:,jsd:,:) :: theta
     real, intent(in), dimension(isd:,jsd:,:) :: press
 
     real, dimension(isd:ied,jsd:jed,nk) :: density_sfc
@@ -3544,7 +3544,7 @@ end subroutine compute_density_diagnostics
   function density_point (s1, t1, p1_dbars)
 
     real, intent(in) :: s1
-    real, intent(inout) :: t1
+    real, intent(in) :: t1
     real, intent(in) :: p1_dbars
 
     real :: t2, sp5, p1, p1t1
